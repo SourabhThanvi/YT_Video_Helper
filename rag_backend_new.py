@@ -6,6 +6,8 @@ from langchain.schema import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.prompts import PromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
+
 
 # Initialize Gemini client (uses GOOGLE_API_KEY env var by default)
 from dotenv import load_dotenv
@@ -14,7 +16,7 @@ load_dotenv()
 key = os.getenv("GOOGLE_API_KEY")
 # if not api_key: 
 #     raise ValueError("GOOGLE_API_KEY environment variable not set")
-client = genai.Client(api_key=key)
+# client = genai.Client(api_key=key)
 
 def extract_video_id(url: str) -> str:
     """Extract YouTube video ID from URL."""
@@ -222,10 +224,9 @@ def get_answer(question: str, faiss_index: FAISS, video_type: str = "general") -
     final_prompt = prompt.invoke({"context": context_text, "question": question})
     
     # Call Gemini API with temperature control for more factual responses
-    response = client.models.generate_content(
-        contents=final_prompt, 
-        model="gemini-2.0-flash"
-    ) 
+
+    model = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+    response = model.invoke(final_prompt)
     
-    answer = response.text
+    answer = response.content
     return answer
